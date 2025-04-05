@@ -63,7 +63,8 @@ def create_impress_document(save_path, image_path):
         textbox = impress_doc.createInstance("com.sun.star.drawing.TextShape")
         textbox.Name = "txtContent"
         textbox.Position = Point(0, 0)
-        textbox.Size = Size(28000, 21000)  # Make the textbox take up the entire canvas area
+        # textbox.Size = Size(28000, 21000)  # Make the textbox take up the entire canvas area
+        textbox.Size = Size(25000, 21000)  # Make the textbox take up the entire canvas area
 
         blank_slide.add(textbox)
 
