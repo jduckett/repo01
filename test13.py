@@ -5,6 +5,7 @@ import traceback
 from com.sun.star.beans import PropertyValue, UnknownPropertyException
 from com.sun.star.uno import Exception as UnoException
 from com.sun.star.awt import Point, Size
+from com.sun.star.awt.FontWeight import BOLD
 
 def delete_slide(impress_doc, slide_index):
     try:
@@ -64,25 +65,32 @@ def create_impress_document(save_path, image_path):
         textbox.Position = Point(0, 0)
         textbox.Size = Size(28000, 21000)  # Make the textbox take up the entire canvas area
 
+        blank_slide.add(textbox)
+
         text_range = textbox.getText()
         text_range.setString("Your text here")
 
-        # # Set font and size for the text box
-        # cursor = text_range.createTextCursor()
-        # properties = cursor.PropertySetInfo.getProperties()
+        # Set font and size for the text box
+        cursor = text_range.createTextCursor()
+        properties = cursor.PropertySetInfo.getProperties()
         # for prop in properties:
         #     print(f"Property Name: {prop.Name}")
-        # try:
-        #     cursor.setPropertyValue("CharFontName", "DejaVu Sans")
-        # except UnknownPropertyException as e:
-        #     print(f"Failed to set CharFontName: {e.Message}")
-        # try:
-        #     cursor.setPropertyValue("CharHeight", 34)
-        # except UnknownPropertyException as e:
-        #     print(f"Failed to set CharHeight: {e.Message}")
+        try:
+            cursor.setPropertyValue("CharFontName", "DejaVu Sans")
+        except UnknownPropertyException as e:
+            print(f"Failed to set CharFontName: {e.Message}")
+        try:
+            cursor.setPropertyValue("CharHeight", 34)
+        except UnknownPropertyException as e:
+            print(f"Failed to set CharHeight: {e.Message}")
+
+        try:
+            cursor.setPropertyValue("CharWeight", BOLD)
+        except UnknownPropertyException as e:
+            print(f"Failed to set CharWeight: {e.Message}")
 
 
-        blank_slide.add(textbox)
+        # blank_slide.add(textbox)
 
         draw_pages.remove(draw_pages.getByIndex(0))
 

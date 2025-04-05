@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import uno
-from com.sun.star.beans import PropertyValue
+from com.sun.star.beans import PropertyValue, UnknownPropertyException
 from com.sun.star.text import XText
+from com.sun.star.awt.FontWeight import BOLD
 
 def connect_to_libreoffice():
     """Establish a connection to a running LibreOffice instance."""
@@ -54,14 +55,39 @@ def set_text_box_content(slide, text_box_name, new_text):
         if shape.supportsService("com.sun.star.drawing.TextShape") and shape.getName() == text_box_name:
             text = shape.getText()
             text.setString(new_text)
+
+            text_range = text.getText()
+
+            # Set font and size for the text box
+            cursor = text_range.createTextCursor()
+            properties = cursor.PropertySetInfo.getProperties()
+            for prop in properties:
+                print(f"Property Name: {prop.Name}")
+            try:
+                cursor.setPropertyValue("CharFontName", "DejaVu Sans")
+            except UnknownPropertyException as e:
+                print(f"Failed to set CharFontName: {e.Message}")
+            try:
+                cursor.setPropertyValue("CharHeight", 34)
+            except UnknownPropertyException as e:
+                print(f"Failed to set CharHeight: {e.Message}")
+
+            try:
+                cursor.setPropertyValue("CharWeight", BOLD)
+            except UnknownPropertyException as e:
+                print(f"Failed to set CharWeight: {e.Message}")
+
+
+
             return True
     raise Exception(f"Text box '{text_box_name}' not found on slide")
 
 def main():
     # Configuration
     file_path = "/hbc/docs/services/sunday/morning/template-scripture-02.odp"
+    file_path = "/hbc/document.odp"
     slide_index_to_duplicate = 1
-    text_box_name = "txtContent01"
+    text_box_name = "txtContent"
     new_text_content = "This is the new text content!"
 
     try:
@@ -75,7 +101,7 @@ def main():
         # new_slide = duplicate_slide(document, slide_index_to_duplicate)
 
         slides = document.getDrawPages()
-        new_slide = slides.getByIndex(1)
+        new_slide = slides.getByIndex(0)
 
         # # Set text box content on the duplicated slide
         set_text_box_content(new_slide, text_box_name, new_text_content)
