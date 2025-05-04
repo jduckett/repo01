@@ -25,21 +25,22 @@ var _ fyne.Widget = (*Viewer)(nil)
 // This is a base widget to only read a video or that can be extended to create a video player with controls.
 type Viewer struct {
 	widget.BaseWidget
-	appSink          *gstApp.Sink
-	bus              *gst.Bus
-	pipeline         *gst.Pipeline
-	// onNewFrame       func(time.Duration)
+	appSink          	*gstApp.Sink
+	bus              	*gst.Bus
+	pipeline 			*gst.Pipeline
+	onNewSampleFunc		func(time.Duration)
 	// onPreRoll        func()
 	// onEOS            func()
 	// onPaused         func()
 	// onStartPlaying   func()
 	// onTitle          func(string)
-	rate             int
-	imageQuality     int
-	width            int
-	height           int
-	duration         time.Duration
-	frame            *canvas.Image
+	rate             	int
+	imageQuality     	int
+	width            	int
+	height           	int
+	duration         	time.Duration
+	frame            	*canvas.Image
+
 	// fullscreenWindow fyne.Window
 	// currentWindow    fyne.Window
 
@@ -100,13 +101,10 @@ func (v *Viewer) CreatePipeline(pipeline string) (err error) {
 func (v *Viewer) newSampleFunc(appSink *gstApp.Sink) gst.FlowReturn {
 	fmt.Println("newSampleFunc()")
 
-
 	sample := appSink.PullSample()
 	if sample == nil {
 		return gst.FlowEOS
 	}
-
-	fmt.Println(sample)
 
 	buffer := sample.GetBuffer()
 	if buffer == nil {
@@ -128,65 +126,19 @@ func (v *Viewer) newSampleFunc(appSink *gstApp.Sink) gst.FlowReturn {
 		return gst.FlowError
 	}
 
-	// v.BaseWidget.Queue(func() {
-    //      v.frame.Image = img
-    //      v.frame.Refresh()
-    // })
+	fyne.Do(func() {
+        v.frame.Image = img
+        v.frame.Refresh()
+    })
 
-	// v.Queue(func() {
-    //     v.frame.Image = img
-    //     v.frame.Refresh()
-    // })
-
-	func() {
-		v.frame.Image = img
-		v.frame.Refresh()
-	}()
-
-	// _, pos := v.pipeline.QueryPosition(gst.FormatTime)
-	// if v.onNewFrame != nil {
-	// 	// get the current time of the pipeline
-	// 	go v.onNewFrame(time.Duration(float64(pos)))
-	// }
+	_, pos := v.pipeline.QueryPosition(gst.FormatTime)
+	if v.onNewSampleFunc != nil {
+		go v.onNewSampleFunc(time.Duration(float64(pos)))
+	}
 
 	// return ret
 	return gst.FlowOK
 }
-
-
-// func (v *Viewer) getCurrentFrame(appSink *app.Sink, latest bool) (image.Image, gst.FlowReturn) {
-// 	// fmt.Println("getCurrentFrame()")
-// 	var sample *gst.Sample
-// 	if !latest {
-// 		sample = appSink.PullSample()
-// 	} else {
-// 		sample = appSink.GetLastSample()
-// 	}
-// 	if sample == nil {
-// 		return nil, gst.FlowEOS
-// 	}
-
-// 	buffer := sample.GetBuffer() // Get the buffer from the sample
-// 	if buffer == nil {
-// 		return nil, gst.FlowError
-// 	}
-// 	defer buffer.Unmap()
-
-// 	samples := buffer.Map(gst.MapRead).AsUint8Slice()
-// 	if samples == nil {
-// 		return nil, gst.FlowError
-// 	}
-
-// 	// the sample is a jpeg
-// 	reader := bytes.NewReader(samples)
-// 	img, _, err := image.Decode(reader)
-// 	if err != nil {
-// 		fyne.LogError("Failed to decode image: %w", err)
-// 		return nil, gst.FlowError
-// 	}
-
-// 	return img, gst.FlowOK
-// }
 
 
 func (v *Viewer) createBus() {

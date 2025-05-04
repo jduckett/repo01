@@ -56,7 +56,7 @@ func main() {
 
 	viewer.Play()
 
-	w.Resize(fyne.NewSize(640, 480))
+	w.Resize(fyne.NewSize(800, 600))
 	w.SetContent(viewer)
 
 
